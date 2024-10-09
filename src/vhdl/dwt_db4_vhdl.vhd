@@ -281,7 +281,7 @@ SCALAR_lo_M_AXIS_inst : SCALAR_M_AXIS
 		IN_SIZE         => 32,
 		IN_FRAC_SIZE    => 23,
 		ADD_1_SIZE      => 32,
-		ADD_1_FRAC_SIZE => 10,
+		ADD_1_FRAC_SIZE => 23,
 		ADD_2_SIZE      => 32,
 		ADD_2_FRAC_SIZE => 23,
 		ADD_3_SIZE      => 32,
