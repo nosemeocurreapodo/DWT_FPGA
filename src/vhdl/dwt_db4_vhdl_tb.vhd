@@ -12,6 +12,9 @@ end entity dwt_db4_vhdl_tb;
 
 architecture rtl of dwt_db4_vhdl_tb is
 
+	constant SCALAR_SIZE      : integer := 16;
+	constant SCALAR_FRAC_SIZE : integer := 10;
+	
 	component SCALAR_M_AXIS is
 		generic (
 		    SCALAR_SIZE          : integer;
@@ -56,11 +59,11 @@ architecture rtl of dwt_db4_vhdl_tb is
 	end component;
 
 	component dwt_db4_vhdl is
-		generic (
-			SHIFT_REG_LEN	 : integer := 16;
-			SCALAR_SIZE	     : integer := 32;
-			SCALAR_FRAC_SIZE : integer := 23
-		);
+		--generic (
+		--	SHIFT_REG_LEN	 : integer := 16;
+		--	SCALAR_SIZE	     : integer := 32;
+		--	SCALAR_FRAC_SIZE : integer := 23
+		--);
 		port (
 	
 			-- Ports of Axi Slave Bus Interface S00_AXIS
@@ -96,9 +99,6 @@ architecture rtl of dwt_db4_vhdl_tb is
 		);
 	end component dwt_db4_vhdl;
 
-	constant SCALAR_SIZE      : integer := 16;
-	constant SCALAR_FRAC_SIZE : integer := 10;
-
 	signal clk : std_logic := '1';
 	signal rst : std_logic := '0';
 
@@ -123,7 +123,7 @@ architecture rtl of dwt_db4_vhdl_tb is
 	signal S_AXIS_TVALID  : std_logic;
 	signal S_AXIS_TDATA   : std_logic_vector(SCALAR_SIZE-1 downto 0);
 	signal S_AXIS_TSTRB   : std_logic_vector((SCALAR_SIZE/8)-1 downto 0);
-	signal S_AXIS_TKEEP   : std_logic_vector((SCALAR_SIZE/8)-1 downto 0) := "1111";
+	signal S_AXIS_TKEEP   : std_logic_vector((SCALAR_SIZE/8)-1 downto 0);
 	signal S_AXIS_TLAST   : std_logic;
 	signal S_AXIS_TREADY  : std_logic;
 
@@ -212,12 +212,12 @@ begin
 	);
 
 	dwt_db4_vhdl_instantiation : dwt_db4_vhdl
-	generic map
-	(
-		SHIFT_REG_LEN    => 16,
-		SCALAR_SIZE      => SCALAR_SIZE,
-		SCALAR_FRAC_SIZE => SCALAR_FRAC_SIZE
-	)
+	--generic map
+	--(
+	--	SHIFT_REG_LEN    => 16,
+	--	SCALAR_SIZE      => SCALAR_SIZE,
+	--	SCALAR_FRAC_SIZE => SCALAR_FRAC_SIZE
+	--)
 	port map 
 	(
 		-- Ports of Axi Slave Bus Interface S00_AXIS
