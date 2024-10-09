@@ -9,9 +9,9 @@ use work.Matrix_component_pack.all;
 -- This always takes as input a float32, and outputs also a float32, regardless of the precision of the internal computations
 entity dwt_db4_vhdl is
 	generic (
-		SHIFT_REG_LEN	: integer	:= 16;
-		C_S00_AXIS_TDATA_WIDTH	: integer	:= 32;
-		C_M00_AXIS_TDATA_WIDTH	: integer	:= 32
+		SHIFT_REG_LEN	 : integer := 16;
+		SCALAR_SIZE      : integer := 16;
+		SCALAR_FRAC_SIZE : integer := 10	
 	);
 	port (
 
@@ -19,9 +19,9 @@ entity dwt_db4_vhdl is
 		s_axis_aclk  	: in std_logic;
 		s_axis_aresetn	: in std_logic;
 		s_axis_tready	: out std_logic;
-		s_axis_tdata	: in std_logic_vector(C_S00_AXIS_TDATA_WIDTH-1 downto 0);
-		s_axis_tstrb	: in std_logic_vector((C_S00_AXIS_TDATA_WIDTH/8)-1 downto 0);
-		s_axis_tkeep	: in std_logic_vector((C_S00_AXIS_TDATA_WIDTH/8)-1 downto 0);
+		s_axis_tdata	: in std_logic_vector(SCALAR_SIZE-1 downto 0);
+		s_axis_tstrb	: in std_logic_vector((SCALAR_SIZE/8)-1 downto 0);
+		s_axis_tkeep	: in std_logic_vector((SCALAR_SIZE/8)-1 downto 0);
 		s_axis_tlast	: in std_logic;
 		s_axis_tvalid	: in std_logic;
 
@@ -29,9 +29,9 @@ entity dwt_db4_vhdl is
 		hi_m_axis_aclk	    : in std_logic;
 		hi_m_axis_aresetn	: in std_logic;
 		hi_m_axis_tvalid	: out std_logic;
-		hi_m_axis_tdata  	: out std_logic_vector(C_M00_AXIS_TDATA_WIDTH-1 downto 0);
-		hi_m_axis_tstrb 	: out std_logic_vector((C_M00_AXIS_TDATA_WIDTH/8)-1 downto 0);
-		hi_m_axis_tkeep 	: out std_logic_vector((C_M00_AXIS_TDATA_WIDTH/8)-1 downto 0);
+		hi_m_axis_tdata  	: out std_logic_vector(SCALAR_SIZE-1 downto 0);
+		hi_m_axis_tstrb 	: out std_logic_vector((SCALAR_SIZE/8)-1 downto 0);
+		hi_m_axis_tkeep 	: out std_logic_vector((SCALAR_SIZE/8)-1 downto 0);
 		hi_m_axis_tlast	    : out std_logic;
 		hi_m_axis_tready	: in std_logic;
 
@@ -39,9 +39,9 @@ entity dwt_db4_vhdl is
 		lo_m_axis_aclk  	: in std_logic;
 		lo_m_axis_aresetn	: in std_logic;
 		lo_m_axis_tvalid	: out std_logic;
-		lo_m_axis_tdata	    : out std_logic_vector(C_M00_AXIS_TDATA_WIDTH-1 downto 0);
-		lo_m_axis_tstrb 	: out std_logic_vector((C_M00_AXIS_TDATA_WIDTH/8)-1 downto 0);
-		lo_m_axis_tkeep 	: out std_logic_vector((C_M00_AXIS_TDATA_WIDTH/8)-1 downto 0);
+		lo_m_axis_tdata	    : out std_logic_vector(SCALAR_SIZE-1 downto 0);
+		lo_m_axis_tstrb 	: out std_logic_vector((SCALAR_SIZE/8)-1 downto 0);
+		lo_m_axis_tkeep 	: out std_logic_vector((SCALAR_SIZE/8)-1 downto 0);
 		lo_m_axis_tlast 	: out std_logic;
 		lo_m_axis_tready	: in std_logic
 
@@ -53,12 +53,13 @@ architecture arch_imp of dwt_db4_vhdl is
 	-- component declaration
 	component SCALAR_S_AXIS is
 		generic (
-		SCALAR_SIZE           : integer := 32;
-		C_S_AXIS_TDATA_WIDTH	: integer	:= 32
+		SCALAR_SIZE          : integer := 32;
+		SCALAR_FRAC_SIZE     : integer := 23;
+		C_S_AXIS_TDATA_WIDTH : integer := 32
 		);
 		port (
 		data_out_ok   : out std_logic;
-		data_out      : out std_logic_vector(31 downto 0);
+		data_out      : out std_logic_vector(SCALAR_SIZE - 1 downto 0);
 		data_out_last : out std_logic;
 		S_AXIS_ACLK	: in std_logic;
 		S_AXIS_ARESETN	: in std_logic;
@@ -73,13 +74,13 @@ architecture arch_imp of dwt_db4_vhdl is
 
 	component SCALAR_M_AXIS is
 		generic (
-		SCALAR_SIZE           : integer := 32;
-		C_M_AXIS_TDATA_WIDTH  : integer	:= 32;
-		SCALAR_FIFO_DEPTH	  : integer	:= 32
+		SCALAR_SIZE           : integer;
+		C_M_AXIS_TDATA_WIDTH  : integer;
+		SCALAR_FIFO_DEPTH	  : integer
 		);
 		port (
 		data_in_ok  : in std_logic;
-		data_in     : in std_logic_vector(31 downto 0);
+		data_in     : in std_logic_vector(SCALAR_SIZE - 1 downto 0);
 		M_AXIS_ACLK	: in std_logic;
 		M_AXIS_ARESETN	: in std_logic;
 		M_AXIS_TVALID	: out std_logic;
@@ -95,13 +96,13 @@ architecture arch_imp of dwt_db4_vhdl is
 	signal data_in_len_register : std_logic_vector(31 downto 0) := std_logic_vector(to_unsigned(32, 32));
 	signal data_out_len_register : std_logic_vector(31 downto 0) := std_logic_vector(to_unsigned((32 + 8 - 1)/2, 32));
 
-	signal slave_data      : std_logic_vector(31 downto 0);
+	signal slave_data      : std_logic_vector(SCALAR_SIZE - 1 downto 0);
 	signal slave_data_ok   : std_logic;
 	signal slave_data_last : std_logic;
 
 	-- VHDL 2008 syntax
-	signal shift_reg        : Vector(SHIFT_REG_LEN - 1 downto 0)(31 downto 0);
-	signal filter_input     : Vector(7 downto 0)(31 downto 0);
+	signal shift_reg        : Vector(SHIFT_REG_LEN - 1 downto 0)(SCALAR_SIZE - 1 downto 0);
+	signal filter_input     : Vector(7 downto 0)(SCALAR_SIZE - 1 downto 0);
 	--signal lo_filter_coeff  : Vector8;
 	--signal hi_filter_coeff  : Vector8;
 
@@ -124,14 +125,14 @@ architecture arch_imp of dwt_db4_vhdl is
 	--									   to_scalar(-2.303778133088965008632911830440708500016152482483092977910968e-01));
 
 	-- VHDL 2008 syntax
-	constant hi_filter_coeff : Vector(7 downto 0)(31 downto 0) := (to_scalar(-0.01059740178506903210488, 32, 23),
-										   to_scalar(-0.03288301166688519973540, 32, 23),
-										   to_scalar( 0.03084138183556076362721, 32, 23),
-										   to_scalar( 0.18703481171909308407957, 32, 23),
-										   to_scalar(-0.02798376941685985421141, 32, 23),
-										   to_scalar(-0.63088076792985890788171, 32, 23),
-										   to_scalar( 0.71484657055291564708992, 32, 23),
-										   to_scalar(-0.23037781330889650086329, 32, 23));
+	constant hi_filter_coeff : Vector(7 downto 0)(SCALAR_SIZE - 1 downto 0) := (to_scalar(-0.01059740178506903210488, SCALAR_SIZE, SCALAR_FRAC_SIZE),
+										   to_scalar(-0.03288301166688519973540, SCALAR_SIZE, SCALAR_FRAC_SIZE),
+										   to_scalar( 0.03084138183556076362721, SCALAR_SIZE, SCALAR_FRAC_SIZE),
+										   to_scalar( 0.18703481171909308407957, SCALAR_SIZE, SCALAR_FRAC_SIZE),
+										   to_scalar(-0.02798376941685985421141, SCALAR_SIZE, SCALAR_FRAC_SIZE),
+										   to_scalar(-0.63088076792985890788171, SCALAR_SIZE, SCALAR_FRAC_SIZE),
+										   to_scalar( 0.71484657055291564708992, SCALAR_SIZE, SCALAR_FRAC_SIZE),
+										   to_scalar(-0.23037781330889650086329, SCALAR_SIZE, SCALAR_FRAC_SIZE));
 
 	--constant hi_filter_coeff : Vector8 := (to_scalar(0.0),
 	--									   to_scalar(0.0),
@@ -161,19 +162,19 @@ architecture arch_imp of dwt_db4_vhdl is
 	--									   to_scalar(-1.059740178506903210488320852402722918109996490637641983484974e-02));
 
 	-- VHDL 2008 syntax
-	constant lo_filter_coeff : Vector(7 downto 0)(31 downto 0) := (to_scalar( 0.23037781330889650086329, 32, 23),
-										   to_scalar( 0.71484657055291564708992, 32, 23),
-										   to_scalar( 0.63088076792985890788171, 32, 23),
-										   to_scalar(-0.02798376941685985421141, 32, 23),
-										   to_scalar(-0.18703481171909308407957, 32, 23),
-										   to_scalar( 0.03084138183556076362721, 32, 23),
-										   to_scalar( 0.03288301166688519973540, 32, 23),
-										   to_scalar(-0.01059740178506903210488, 32, 23));
+	constant lo_filter_coeff : Vector(7 downto 0)(SCALAR_SIZE - 1 downto 0) := (to_scalar( 0.23037781330889650086329, SCALAR_SIZE, SCALAR_FRAC_SIZE),
+										   to_scalar( 0.71484657055291564708992, SCALAR_SIZE, SCALAR_FRAC_SIZE),
+										   to_scalar( 0.63088076792985890788171, SCALAR_SIZE, SCALAR_FRAC_SIZE),
+										   to_scalar(-0.02798376941685985421141, SCALAR_SIZE, SCALAR_FRAC_SIZE),
+										   to_scalar(-0.18703481171909308407957, SCALAR_SIZE, SCALAR_FRAC_SIZE),
+										   to_scalar( 0.03084138183556076362721, SCALAR_SIZE, SCALAR_FRAC_SIZE),
+										   to_scalar( 0.03288301166688519973540, SCALAR_SIZE, SCALAR_FRAC_SIZE),
+										   to_scalar(-0.01059740178506903210488, SCALAR_SIZE, SCALAR_FRAC_SIZE));
 
-	signal lo_data     : std_logic_vector(31 downto 0);
+	signal lo_data     : std_logic_vector(SCALAR_SIZE - 1 downto 0);
 	signal lo_data_ok  : std_logic;
 
-	signal hi_data     : std_logic_vector(31 downto 0);
+	signal hi_data     : std_logic_vector(SCALAR_SIZE - 1 downto 0);
 	signal hi_data_ok  : std_logic;
 
 	signal data_in_count : unsigned(31 downto 0)  := to_unsigned(0, 32);
@@ -193,8 +194,9 @@ begin
 
 SCALAR_S_AXIS_inst : SCALAR_S_AXIS
 	generic map (
-	   SCALAR_SIZE => 32,
-		C_S_AXIS_TDATA_WIDTH	=> C_S00_AXIS_TDATA_WIDTH
+	   	SCALAR_SIZE => SCALAR_SIZE,
+		SCALAR_FRAC_SIZE => SCALAR_FRAC_SIZE,
+		C_S_AXIS_TDATA_WIDTH	=> SCALAR_SIZE
 	)
 	port map (
 		data_out_ok     => slave_data_ok,
@@ -212,8 +214,8 @@ SCALAR_S_AXIS_inst : SCALAR_S_AXIS
 
 SCALAR_hi_M_AXIS_inst : SCALAR_M_AXIS
 	generic map (
-	    SCALAR_SIZE => 32,
-		C_M_AXIS_TDATA_WIDTH  => C_M00_AXIS_TDATA_WIDTH,
+	    SCALAR_SIZE => SCALAR_SIZE,
+		C_M_AXIS_TDATA_WIDTH  => SCALAR_SIZE,
 		SCALAR_FIFO_DEPTH     => 32
 	)
 	port map (
@@ -231,7 +233,8 @@ SCALAR_hi_M_AXIS_inst : SCALAR_M_AXIS
 
 SCALAR_lo_M_AXIS_inst : SCALAR_M_AXIS
 	generic map (
-		C_M_AXIS_TDATA_WIDTH  => C_M00_AXIS_TDATA_WIDTH,
+		SCALAR_SIZE => SCALAR_SIZE,
+		C_M_AXIS_TDATA_WIDTH  => SCALAR_SIZE,
 		SCALAR_FIFO_DEPTH     => 32
 	)
 	port map (
@@ -251,16 +254,16 @@ SCALAR_lo_M_AXIS_inst : SCALAR_M_AXIS
 	Vector8_dot_fast 
 	generic map
 	(
-		IN_SIZE         => 32,
-		IN_FRAC_SIZE    => 23,
+		IN_SIZE         => SCALAR_SIZE,
+		IN_FRAC_SIZE    => SCALAR_FRAC_SIZE,
 		ADD_1_SIZE      => 32,
 		ADD_1_FRAC_SIZE => 23,
 		ADD_2_SIZE      => 32,
 		ADD_2_FRAC_SIZE => 23,
 		ADD_3_SIZE      => 32,
 		ADD_3_FRAC_SIZE => 23,
-		OUT_SIZE        => 32,
-		OUT_FRAC_SIZE   => 23,
+		OUT_SIZE        => SCALAR_SIZE,
+		OUT_FRAC_SIZE   => SCALAR_FRAC_SIZE,
 		AUX_SIZE        => 32
 	)
 	port map
@@ -278,16 +281,16 @@ SCALAR_lo_M_AXIS_inst : SCALAR_M_AXIS
 	Vector8_dot_fast 
 	generic map
 	(
-		IN_SIZE         => 32,
-		IN_FRAC_SIZE    => 23,
+		IN_SIZE         => SCALAR_SIZE,
+		IN_FRAC_SIZE    => SCALAR_FRAC_SIZE,
 		ADD_1_SIZE      => 32,
 		ADD_1_FRAC_SIZE => 23,
 		ADD_2_SIZE      => 32,
 		ADD_2_FRAC_SIZE => 23,
 		ADD_3_SIZE      => 32,
 		ADD_3_FRAC_SIZE => 23,
-		OUT_SIZE        => 32,
-		OUT_FRAC_SIZE   => 23,
+		OUT_SIZE        => SCALAR_SIZE,
+		OUT_FRAC_SIZE   => SCALAR_FRAC_SIZE,
 		AUX_SIZE        => 32
 	)
 	port map

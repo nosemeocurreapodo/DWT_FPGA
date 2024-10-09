@@ -7,9 +7,9 @@ use work.FPU_utility_functions_pack.all;
 entity SCALAR_S_AXIS is
 	generic (
 		-- AXI4Stream sink: Data Width
-		SCALAR_SIZE           : integer := 32;
-		SCALAR_FRAC_SIZE      : integer := 23;
-		C_S_AXIS_TDATA_WIDTH  : integer	:= 32
+		SCALAR_SIZE           : integer;
+		SCALAR_FRAC_SIZE      : integer;
+		C_S_AXIS_TDATA_WIDTH  : integer
 	);
 	port (
 

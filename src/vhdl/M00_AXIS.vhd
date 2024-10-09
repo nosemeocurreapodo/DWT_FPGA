@@ -4,9 +4,9 @@ use ieee.numeric_std.all;
 
 entity SCALAR_M_AXIS is
 	generic (
-		C_M_AXIS_TDATA_WIDTH : integer := 32;
-		SCALAR_SIZE          : integer := 32;
-		SCALAR_FIFO_DEPTH    : integer := 32
+		SCALAR_SIZE          : integer;
+		C_M_AXIS_TDATA_WIDTH : integer;
+		SCALAR_FIFO_DEPTH    : integer
 	);
 	port (
 
