@@ -12,8 +12,8 @@ end entity dwt_db4_vhdl_tb;
 
 architecture rtl of dwt_db4_vhdl_tb is
 
-	constant SCALAR_SIZE      : integer := 16;
-	constant SCALAR_FRAC_SIZE : integer := 10;
+	constant SCALAR_SIZE      : integer := 24;
+	constant SCALAR_FRAC_SIZE : integer := 17;
 	
 	component SCALAR_M_AXIS is
 		generic (
@@ -77,8 +77,8 @@ architecture rtl of dwt_db4_vhdl_tb is
 			s_axis_tvalid	: in std_logic;
 	
 			-- Ports of Axi Master Bus Interface M00_AXIS
-			hi_m_axis_aclk	    : in std_logic;
-			hi_m_axis_aresetn	: in std_logic;
+			--hi_m_axis_aclk	    : in std_logic;
+			--hi_m_axis_aresetn	: in std_logic;
 			hi_m_axis_tvalid	: out std_logic;
 			hi_m_axis_tdata  	: out std_logic_vector(SCALAR_SIZE-1 downto 0);
 			hi_m_axis_tstrb 	: out std_logic_vector((SCALAR_SIZE/8)-1 downto 0);
@@ -87,8 +87,8 @@ architecture rtl of dwt_db4_vhdl_tb is
 			hi_m_axis_tready	: in std_logic;
 	
 			-- Ports of Axi Master Bus Interface M00_AXIS
-			lo_m_axis_aclk  	: in std_logic;
-			lo_m_axis_aresetn	: in std_logic;
+			--lo_m_axis_aclk  	: in std_logic;
+			--lo_m_axis_aresetn	: in std_logic;
 			lo_m_axis_tvalid	: out std_logic;
 			lo_m_axis_tdata	    : out std_logic_vector(SCALAR_SIZE-1 downto 0);
 			lo_m_axis_tstrb 	: out std_logic_vector((SCALAR_SIZE/8)-1 downto 0);
@@ -231,8 +231,8 @@ begin
 		s_axis_tvalid	=> S_AXIS_TVALID,
 	
 		-- Ports of Axi Master Bus Interface M00_AXIS
-		hi_m_axis_aclk	    => clk,
-		hi_m_axis_aresetn	=> rst,
+		--hi_m_axis_aclk	    => clk,
+		--hi_m_axis_aresetn	=> rst,
 		hi_m_axis_tvalid	=> hi_AXIS_TVALID,
 		hi_m_axis_tdata  	=> hi_AXIS_TDATA,
 		hi_m_axis_tstrb 	=> hi_AXIS_TSTRB,
@@ -241,8 +241,8 @@ begin
 		hi_m_axis_tready	=> hi_AXIS_TREADY,
 
 		-- Ports of Axi Master Bus Interface M00_AXIS
-		lo_m_axis_aclk  	=> clk,
-		lo_m_axis_aresetn	=> rst,
+		--lo_m_axis_aclk  	=> clk,
+		--lo_m_axis_aresetn	=> rst,
 		lo_m_axis_tvalid	=> lo_AXIS_TVALID,
 		lo_m_axis_tdata	    => lo_AXIS_TDATA,
 		lo_m_axis_tstrb 	=> lo_AXIS_TSTRB,
@@ -251,8 +251,8 @@ begin
 		lo_m_axis_tready	=> lo_AXIS_TREADY
 	);
 
-	clk <= not (clk) after 5 ns;
-    rst <= '0', '1' after 15 ns;
+	clk <= not (clk) after 10 ns;
+    rst <= '0', '1' after 30 ns;
 
 	verify : process(clk)
 		--random number generator

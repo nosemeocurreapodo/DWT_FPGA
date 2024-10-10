@@ -10,8 +10,8 @@ use work.Matrix_component_pack.all;
 entity dwt_db4_vhdl is
 	generic (
 		SHIFT_REG_LEN	 : integer := 16;
-		SCALAR_SIZE      : integer := 16;
-		SCALAR_FRAC_SIZE : integer := 10	
+		SCALAR_SIZE      : integer := 24;
+		SCALAR_FRAC_SIZE : integer := 17	
 	);
 	port (
 
@@ -26,8 +26,8 @@ entity dwt_db4_vhdl is
 		s_axis_tvalid	: in std_logic;
 
 		-- Ports of Axi Master Bus Interface M00_AXIS
-		hi_m_axis_aclk	    : in std_logic;
-		hi_m_axis_aresetn	: in std_logic;
+		--hi_m_axis_aclk	    : in std_logic;
+		--hi_m_axis_aresetn	: in std_logic;
 		hi_m_axis_tvalid	: out std_logic;
 		hi_m_axis_tdata  	: out std_logic_vector(SCALAR_SIZE-1 downto 0);
 		hi_m_axis_tstrb 	: out std_logic_vector((SCALAR_SIZE/8)-1 downto 0);
@@ -36,8 +36,8 @@ entity dwt_db4_vhdl is
 		hi_m_axis_tready	: in std_logic;
 
 		-- Ports of Axi Master Bus Interface M00_AXIS
-		lo_m_axis_aclk  	: in std_logic;
-		lo_m_axis_aresetn	: in std_logic;
+		--lo_m_axis_aclk  	: in std_logic;
+		--lo_m_axis_aresetn	: in std_logic;
 		lo_m_axis_tvalid	: out std_logic;
 		lo_m_axis_tdata	    : out std_logic_vector(SCALAR_SIZE-1 downto 0);
 		lo_m_axis_tstrb 	: out std_logic_vector((SCALAR_SIZE/8)-1 downto 0);
@@ -177,6 +177,12 @@ architecture arch_imp of dwt_db4_vhdl is
 	signal hi_data     : std_logic_vector(SCALAR_SIZE - 1 downto 0);
 	signal hi_data_ok  : std_logic;
 
+	signal lo_data_reg     : std_logic_vector(SCALAR_SIZE - 1 downto 0);
+	signal lo_data_ok_reg  : std_logic;
+
+	signal hi_data_reg     : std_logic_vector(SCALAR_SIZE - 1 downto 0);
+	signal hi_data_ok_reg  : std_logic;
+
 	signal data_in_count : unsigned(31 downto 0)  := to_unsigned(0, 32);
 	signal data_out_count : unsigned(31 downto 0) := to_unsigned(0, 32);
 
@@ -219,10 +225,10 @@ SCALAR_hi_M_AXIS_inst : SCALAR_M_AXIS
 		SCALAR_FIFO_DEPTH     => 32
 	)
 	port map (
-		data_in_ok      => hi_data_ok,
-		data_in         => hi_data,
-		M_AXIS_ACLK	    => hi_m_axis_aclk,
-		M_AXIS_ARESETN	=> hi_m_axis_aresetn,
+		data_in_ok      => hi_data_ok_reg,
+		data_in         => hi_data_reg,
+		M_AXIS_ACLK	    => s_axis_aclk, --hi_m_axis_aclk,
+		M_AXIS_ARESETN	=> s_axis_aresetn, --hi_m_axis_aresetn,
 		M_AXIS_TVALID	=> hi_m_axis_tvalid,
 		M_AXIS_TDATA	=> hi_m_axis_tdata,
 		M_AXIS_TSTRB	=> hi_m_axis_tstrb,
@@ -238,10 +244,10 @@ SCALAR_lo_M_AXIS_inst : SCALAR_M_AXIS
 		SCALAR_FIFO_DEPTH     => 32
 	)
 	port map (
-		data_in_ok      => lo_data_ok,
-		data_in         => lo_data,
-		M_AXIS_ACLK	    => lo_m_axis_aclk,
-		M_AXIS_ARESETN	=> lo_m_axis_aresetn,
+		data_in_ok      => lo_data_ok_reg,
+		data_in         => lo_data_reg,
+		M_AXIS_ACLK	    => s_axis_aclk, --lo_m_axis_aclk,
+		M_AXIS_ARESETN	=> s_axis_aresetn, --lo_m_axis_aresetn,
 		M_AXIS_TVALID	=> lo_m_axis_tvalid,
 		M_AXIS_TDATA	=> lo_m_axis_tdata,
 		M_AXIS_TSTRB	=> lo_m_axis_tstrb,
@@ -307,6 +313,23 @@ SCALAR_lo_M_AXIS_inst : SCALAR_M_AXIS
 	filter_input_gen: for i in 7 downto 0 generate
 		filter_input(i) <= shift_reg(i+6);
 	end generate;
+
+	lo_data_reg     <= lo_data;
+	lo_data_ok_reg  <= lo_data_ok;
+
+	hi_data_reg     <= hi_data;
+	hi_data_ok_reg  <= hi_data_ok;
+
+	--ff_output_process : process(s_axis_aclk)
+	--begin
+	--	if (rising_edge(s_axis_aclk)) then	
+	--		lo_data_reg     <= lo_data;
+	--		lo_data_ok_reg  <= lo_data_ok;
+	--
+	--		hi_data_reg     <= hi_data;
+	--		hi_data_ok_reg  <= hi_data_ok;
+	--	end if;
+	--end process;
     
 	data_in_count_process : process(s_axis_aclk)
 	begin
@@ -328,7 +351,7 @@ SCALAR_lo_M_AXIS_inst : SCALAR_M_AXIS
 			if(state = IDLE) then
 				data_out_count <= to_unsigned(0, 32);
 			else
-				if(lo_data_ok = '1') then
+				if(lo_data_ok_reg = '1') then
 					data_out_count <= data_out_count + 1;
 				end if;
 			end if;
