@@ -1,9 +1,9 @@
 #include "hls_math.h"
 #include "data_types.h"
 
-#define BUFFER_LEN 10
+#define BUFFER_LEN 16
 
-extern void square_sum_mean_std(hls::stream<packet> &data_in, data_type &square_sum, data_type &mean, data_type &std, data_type &entropy);
+//extern void square_sum_mean_std(hls::stream<packet> &data_in, data_type &square_sum, data_type &mean, data_type &std, data_type &entropy);
 
 extern int reducer(hls::stream<packet> &coeff,
 			float &square_sum, float &mean,

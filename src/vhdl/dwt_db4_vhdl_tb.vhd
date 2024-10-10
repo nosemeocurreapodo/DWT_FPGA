@@ -12,8 +12,8 @@ end entity dwt_db4_vhdl_tb;
 
 architecture rtl of dwt_db4_vhdl_tb is
 
-	constant SCALAR_SIZE      : integer := 24;
-	constant SCALAR_FRAC_SIZE : integer := 17;
+	constant SCALAR_SIZE      : integer := 32;
+	constant SCALAR_FRAC_SIZE : integer := 23;
 	
 	component SCALAR_M_AXIS is
 		generic (

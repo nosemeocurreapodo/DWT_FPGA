@@ -10,8 +10,9 @@ use work.Matrix_component_pack.all;
 entity dwt_db4_vhdl is
 	generic (
 		SHIFT_REG_LEN	 : integer := 16;
-		SCALAR_SIZE      : integer := 24;
-		SCALAR_FRAC_SIZE : integer := 17	
+		OUTPUT_FIFO_LEN  : integer := 64;
+		SCALAR_SIZE      : integer := 32;
+		SCALAR_FRAC_SIZE : integer := 23	
 	);
 	port (
 
@@ -53,9 +54,9 @@ architecture arch_imp of dwt_db4_vhdl is
 	-- component declaration
 	component SCALAR_S_AXIS is
 		generic (
-		SCALAR_SIZE          : integer := 32;
-		SCALAR_FRAC_SIZE     : integer := 23;
-		C_S_AXIS_TDATA_WIDTH : integer := 32
+		SCALAR_SIZE          : integer;
+		SCALAR_FRAC_SIZE     : integer;
+		C_S_AXIS_TDATA_WIDTH : integer
 		);
 		port (
 		data_out_ok   : out std_logic;
@@ -222,7 +223,7 @@ SCALAR_hi_M_AXIS_inst : SCALAR_M_AXIS
 	generic map (
 	    SCALAR_SIZE => SCALAR_SIZE,
 		C_M_AXIS_TDATA_WIDTH  => SCALAR_SIZE,
-		SCALAR_FIFO_DEPTH     => 32
+		SCALAR_FIFO_DEPTH     => OUTPUT_FIFO_LEN
 	)
 	port map (
 		data_in_ok      => hi_data_ok_reg,
@@ -241,7 +242,7 @@ SCALAR_lo_M_AXIS_inst : SCALAR_M_AXIS
 	generic map (
 		SCALAR_SIZE => SCALAR_SIZE,
 		C_M_AXIS_TDATA_WIDTH  => SCALAR_SIZE,
-		SCALAR_FIFO_DEPTH     => 32
+		SCALAR_FIFO_DEPTH     => OUTPUT_FIFO_LEN
 	)
 	port map (
 		data_in_ok      => lo_data_ok_reg,

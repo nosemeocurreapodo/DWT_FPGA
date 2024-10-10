@@ -70,7 +70,7 @@ int reducer(hls::stream<packet> &coeff,
 #pragma HLS INTERFACE s_axilite port = size
 #pragma HLS INTERFACE s_axilite port = return
 
-data_type buffer[7000];
+//data_type buffer[7000];
 
     data_type mean_p[BUFFER_LEN];
 //#pragma HLS ARRAY_PARTITION variable = mean_p complete dim = 0
@@ -84,6 +84,7 @@ data_type buffer[7000];
 init_buffer_loop:
     for(int i = 0; i < BUFFER_LEN; i++)
     {
+#pragma HLS UNROLL
         mean_p[i] = 0.0;
         std_p[i] = 0.0;
         square_sum_p[i] = 0.0;
@@ -99,7 +100,7 @@ ssms_loop:
         coeff.read(p);
 		data_type data = data_type(p.data);
 
-        buffer[i] = data;
+        //buffer[i] = data;
 
         data_type new_mean = data;
         //data_type old_mean = 0.0;//mean_p[i % BUFFER_LEN];
@@ -120,14 +121,62 @@ ssms_loop:
         entropy_p[i % BUFFER_LEN] += new_entropy;
         //_entropy = new_entropy_sum;
 
-		//if (p.last)
-		//	break;
+		if (p.last)
+			break;
 	}
 
+    data_type mean_buffer_1[BUFFER_LEN/2];
+    data_type square_buffer_1[BUFFER_LEN/2];
+    data_type entropy_buffer_1[BUFFER_LEN/2];
+
+    reduce_1_loop:
+    for(int i = 0; i < BUFFER_LEN/2; i++)
+    {
+#pragma HLS UNROLL
+
+        mean_buffer_1[i] = mean_p[i] + mean_p[i + BUFFER_LEN/2];
+        square_buffer_1[i] = square_sum_p[i] + square_sum_p[i + BUFFER_LEN/2];
+        entropy_buffer_1[i] = entropy_p[i] + entropy_p[i + BUFFER_LEN/2];
+    }
+    
+    data_type mean_buffer_2[BUFFER_LEN/4];
+    data_type square_buffer_2[BUFFER_LEN/4];
+    data_type entropy_buffer_2[BUFFER_LEN/4];
+
+    reduce_2_loop:
+    for(int i = 0; i < BUFFER_LEN/4; i++)
+    {
+#pragma HLS UNROLL
+
+        mean_buffer_2[i] = mean_buffer_1[i] + mean_buffer_1[i + BUFFER_LEN/4];
+        square_buffer_2[i] = square_buffer_1[i] + square_buffer_1[i + BUFFER_LEN/4];
+        entropy_buffer_2[i] = entropy_buffer_1[i] + entropy_buffer_1[i + BUFFER_LEN/4];
+    }
+
+    data_type mean_buffer_3[BUFFER_LEN/8];
+    data_type square_buffer_3[BUFFER_LEN/8];
+    data_type entropy_buffer_3[BUFFER_LEN/8];
+
+    reduce_3_loop:
+    for(int i = 0; i < BUFFER_LEN/8; i++)
+    {
+#pragma HLS UNROLL
+
+        mean_buffer_3[i] = mean_buffer_2[i] + mean_buffer_2[i + BUFFER_LEN/8];
+        square_buffer_3[i] = square_buffer_2[i] + square_buffer_2[i + BUFFER_LEN/8];
+        entropy_buffer_3[i] = entropy_buffer_2[i] + entropy_buffer_2[i + BUFFER_LEN/8];
+    }
+    
     data_type _mean = 0.0;
     //data_type _std = 0.0;
     data_type _square_sum = 0.0;
     data_type _entropy = 0.0;
+
+    _mean = mean_buffer_3[0] + mean_buffer_3[1];
+    _square_sum = square_buffer_3[0] + square_buffer_3[1];
+    _entropy = entropy_buffer_3[0] + entropy_buffer_3[1];
+
+    /*
 buffer_loop:
     for(int i = 0; i < BUFFER_LEN; i++)
     {
@@ -136,10 +185,12 @@ buffer_loop:
         _square_sum += square_sum_p[i];
         _entropy += entropy_p[i];
     }
+    */
 
     _mean /= size;
 
 data_type _std = 0.0;
+    /*
     std_loop:
 	for(int i = 0; i < size; i++)
 	{
@@ -148,6 +199,7 @@ data_type _std = 0.0;
         data_type diff = data - _mean;
         _std +=  diff*diff;        
     }
+    */
 
     _std /= size-1;
 
