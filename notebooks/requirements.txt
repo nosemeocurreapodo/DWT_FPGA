@@ -1,0 +1,3 @@
+sudo apt-get install python3-scipy
+sudo apt install python3-matplotlib
+sudo apt-get install python3-sklearn python3-sklearn-lib python3-sklearn-doc
