@@ -185,6 +185,8 @@ ssms_loop:
     _square_sum = square_buffer_3[0] + square_buffer_3[1];
     _entropy = entropy_buffer_3[0] + entropy_buffer_3[1];
 
+    _mean /= size;
+    
     std_loop:
 	for(int i = 0; i < size; i++)
 	{
@@ -220,8 +222,7 @@ ssms_loop:
 
     _std = std_buffer_3[0] + std_buffer_3[1];
 
-    _mean /= size;
-    _std /= size-1;
+    _std /= size;
 
     mean = float(_mean);
     std = float(hls::sqrt(float(_std)));
