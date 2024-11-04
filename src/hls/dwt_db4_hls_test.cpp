@@ -123,6 +123,7 @@ int main()
     float square_sum_3, mean_3, std_3, entropy_3;
     float square_sum_4, mean_4, std_4, entropy_4;
     float square_sum_5, mean_5, std_5, entropy_5;
+    float square_sum_5_lo, mean_5_lo, std_5_lo, entropy_5_lo;
 
 	auto ret1 = dwt_db4_hls(s_in, coeff_lo1, coeff_hi1, size, debug);
     auto ret6 = reducer(coeff_hi1, square_sum_1, mean_1, std_1, entropy_1, dwt_data_size1);
@@ -139,6 +140,7 @@ int main()
     auto ret5 = dwt_db4_hls(coeff_lo4, coeff_lo5, coeff_hi5, dwt_data_size4, debug);
     auto ret10 = reducer(coeff_hi5, square_sum_5, mean_5, std_5, entropy_5, dwt_data_size5);
     std::cout << "debug " << debug << std::endl;
+    auto ret11 = reducer(coeff_lo5, square_sum_5_lo, mean_5_lo, std_5_lo, entropy_5_lo, dwt_data_size5);
 
     float cD_Energy, cA_Energy, D_Entropy, A_Entropy, D_mean, A_mean, D_std, A_std;
 
@@ -146,10 +148,10 @@ int main()
     D_Entropy = (entropy_1 + entropy_2 + entropy_3 + entropy_4 + entropy_5)/5.0;
     D_mean = (mean_1 + mean_2 + mean_3 + mean_4 + mean_5)/5.0;
     D_std = (std_1 + std_2 + std_3 + std_4 + std_5)/5.0;
-    cA_Energy = 0.0;
-    A_Entropy = 0.0;
-    A_mean = 0.0;
-    A_std = 0.0;
+    cA_Energy = square_sum_5_lo;
+    A_Entropy = entropy_5_lo;
+    A_mean = mean_5_lo;
+    A_std = std_5_lo;
 
     std::cout << "results: " << std::endl;
     std::cout << "Energy: " << cD_Energy << " " << cA_Energy << std::endl;
@@ -157,6 +159,7 @@ int main()
     std::cout << "Mean: " << D_mean << " " << A_mean << std::endl;
     std::cout << "Std: " << D_std << " " << A_std << std::endl;
 
+    /*
 	std::cout << "dwt approximation coeffs " << std::endl;
 
 	float approx_coeff_mse = 0.0;
@@ -290,6 +293,7 @@ int main()
 
 	detail_coeff5_mse /= dwt_data_size5;
 	std::cout << "detail coeff 5 mse: " << detail_coeff5_mse << std::endl;	
-
+    */
+    
 	return 0;
 }
