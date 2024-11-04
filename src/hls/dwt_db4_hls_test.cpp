@@ -126,174 +126,180 @@ int main()
     float square_sum_5_lo, mean_5_lo, std_5_lo, entropy_5_lo;
 
 	auto ret1 = dwt_db4_hls(s_in, coeff_lo1, coeff_hi1, size, debug);
-    auto ret6 = reducer(coeff_hi1, square_sum_1, mean_1, std_1, entropy_1, dwt_data_size1);
     std::cout << "debug " << debug << std::endl;
     auto ret2 = dwt_db4_hls(coeff_lo1, coeff_lo2, coeff_hi2, dwt_data_size1, debug);
-    auto ret7 = reducer(coeff_hi2, square_sum_2, mean_2, std_2, entropy_2, dwt_data_size2);
     std::cout << "debug " << debug << std::endl;
     auto ret3 = dwt_db4_hls(coeff_lo2, coeff_lo3, coeff_hi3, dwt_data_size2, debug);
-    auto ret8 = reducer(coeff_hi3, square_sum_3, mean_3, std_3, entropy_3, dwt_data_size3);
     std::cout << "debug " << debug << std::endl;
     auto ret4 = dwt_db4_hls(coeff_lo3, coeff_lo4, coeff_hi4, dwt_data_size3, debug);
-    auto ret9 = reducer(coeff_hi4, square_sum_4, mean_4, std_4, entropy_4, dwt_data_size4);
     std::cout << "debug " << debug << std::endl;
     auto ret5 = dwt_db4_hls(coeff_lo4, coeff_lo5, coeff_hi5, dwt_data_size4, debug);
-    auto ret10 = reducer(coeff_hi5, square_sum_5, mean_5, std_5, entropy_5, dwt_data_size5);
     std::cout << "debug " << debug << std::endl;
-    auto ret11 = reducer(coeff_lo5, square_sum_5_lo, mean_5_lo, std_5_lo, entropy_5_lo, dwt_data_size5);
 
-    float cD_Energy, cA_Energy, D_Entropy, A_Entropy, D_mean, A_mean, D_std, A_std;
+    bool check_reducer = true;
 
-    cD_Energy = (square_sum_1 + square_sum_2 + square_sum_3 + square_sum_4 + square_sum_5)/5.0;
-    D_Entropy = (entropy_1 + entropy_2 + entropy_3 + entropy_4 + entropy_5)/5.0;
-    D_mean = (mean_1 + mean_2 + mean_3 + mean_4 + mean_5)/5.0;
-    D_std = (std_1 + std_2 + std_3 + std_4 + std_5)/5.0;
-    cA_Energy = square_sum_5_lo;
-    A_Entropy = entropy_5_lo;
-    A_mean = mean_5_lo;
-    A_std = std_5_lo;
+    if(check_reducer)
+    {
+        auto ret6 = reducer(coeff_hi1, square_sum_1, mean_1, std_1, entropy_1, dwt_data_size1);
+        auto ret7 = reducer(coeff_hi2, square_sum_2, mean_2, std_2, entropy_2, dwt_data_size2);
+        auto ret8 = reducer(coeff_hi3, square_sum_3, mean_3, std_3, entropy_3, dwt_data_size3);
+        auto ret9 = reducer(coeff_hi4, square_sum_4, mean_4, std_4, entropy_4, dwt_data_size4);
+        auto ret10 = reducer(coeff_hi5, square_sum_5, mean_5, std_5, entropy_5, dwt_data_size5);
+        auto ret11 = reducer(coeff_lo5, square_sum_5_lo, mean_5_lo, std_5_lo, entropy_5_lo, dwt_data_size5);
 
-    std::cout << "results: " << std::endl;
-    std::cout << "Energy: " << cD_Energy << " " << cA_Energy << std::endl;
-    std::cout << "Entropy: " << D_Entropy << " " << A_Entropy << std::endl;
-    std::cout << "Mean: " << D_mean << " " << A_mean << std::endl;
-    std::cout << "Std: " << D_std << " " << A_std << std::endl;
+        float cD_Energy, cA_Energy, D_Entropy, A_Entropy, D_mean, A_mean, D_std, A_std;
 
-    /*
-	std::cout << "dwt approximation coeffs " << std::endl;
+        cD_Energy = (square_sum_1 + square_sum_2 + square_sum_3 + square_sum_4 + square_sum_5)/5.0;
+        D_Entropy = (entropy_1 + entropy_2 + entropy_3 + entropy_4 + entropy_5)/5.0;
+        D_mean = (mean_1 + mean_2 + mean_3 + mean_4 + mean_5)/5.0;
+        D_std = (std_1 + std_2 + std_3 + std_4 + std_5)/5.0;
+        cA_Energy = square_sum_5_lo;
+        A_Entropy = entropy_5_lo;
+        A_mean = mean_5_lo;
+        A_std = std_5_lo;
 
-	float approx_coeff_mse = 0.0;
-	for (int j = 0; j < dwt_data_size5; j++)
-	{
-		packet lo_packet;
-		coeff_lo5.read(lo_packet);
+        std::cout << "results: " << std::endl;
+        std::cout << "Energy: " << cD_Energy << " " << cA_Energy << std::endl;
+        std::cout << "Entropy: " << D_Entropy << " " << A_Entropy << std::endl;
+        std::cout << "Mean: " << D_mean << " " << A_mean << std::endl;
+        std::cout << "Std: " << D_std << " " << A_std << std::endl;
+    }
+    else
+    {
+        std::cout << "dwt approximation coeffs " << std::endl;
 
-        //fpint lo_data;
-		//lo_data.ival = lo_packet.data;	
-        //data_type lo_val = lo_data.fval;
+        float approx_coeff_mse = 0.0;
+        for (int j = 0; j < dwt_data_size5; j++)
+        {
+            packet lo_packet;
+            coeff_lo5.read(lo_packet);
 
-        float lo_val = lo_packet.data;
+            //fpint lo_data;
+            //lo_data.ival = lo_packet.data;	
+            //data_type lo_val = lo_data.fval;
 
-        std::cout << "gt " << approx_coeff_gt[j] << " est " << lo_val << std::endl;
+            float lo_val = lo_packet.data;
 
-		approx_coeff_mse += std::pow(approx_coeff_gt[j] - lo_val, 2.0);
-	}
-	approx_coeff_mse /= dwt_data_size3;
+            std::cout << "gt " << approx_coeff_gt[j] << " est " << lo_val << std::endl;
 
-	std::cout << "approx coeff mse: " << approx_coeff_mse << std::endl;
+            approx_coeff_mse += std::pow(approx_coeff_gt[j] - lo_val, 2.0);
+        }
+        approx_coeff_mse /= dwt_data_size3;
 
-	std::cout << "dwt detail coeffs 1" << std::endl;
-	float detail_coeff1_mse = 0.0;
-	for (int j = 0; j < dwt_data_size1; j++)
-	{
-		packet hi_packet;
-		coeff_hi1.read(hi_packet);
+        std::cout << "approx coeff mse: " << approx_coeff_mse << std::endl;
 
-        //fpint hi_data;
-		//hi_data.ival = hi_packet.data;	
-        //data_type hi_val = hi_data.fval;
+        std::cout << "dwt detail coeffs 1" << std::endl;
+        float detail_coeff1_mse = 0.0;
+        for (int j = 0; j < dwt_data_size1; j++)
+        {
+            packet hi_packet;
+            coeff_hi1.read(hi_packet);
 
-        float hi_val = hi_packet.data;
-        
-        std::cout << "gt " << detail_coeff1_gt[j] << " est " << hi_val << std::endl;
+            //fpint hi_data;
+            //hi_data.ival = hi_packet.data;	
+            //data_type hi_val = hi_data.fval;
 
-		detail_coeff1_mse += std::pow(detail_coeff1_gt[j] - hi_val, 2.0);
-		// std::cout << hi_data.fval << std::endl;
-	}
+            float hi_val = hi_packet.data;
+            
+            std::cout << "gt " << detail_coeff1_gt[j] << " est " << hi_val << std::endl;
 
-	detail_coeff1_mse /= dwt_data_size1;
-	std::cout << "detail coeff 1 mse: " << detail_coeff1_mse << std::endl;
+            detail_coeff1_mse += std::pow(detail_coeff1_gt[j] - hi_val, 2.0);
+            // std::cout << hi_data.fval << std::endl;
+        }
 
-	std::cout << "dwt detail coeffs 2" << std::endl;
-	float detail_coeff2_mse = 0.0;
-	for (int j = 0; j < dwt_data_size2; j++)
-	{
-		packet hi_packet;
-		coeff_hi2.read(hi_packet);
+        detail_coeff1_mse /= dwt_data_size1;
+        std::cout << "detail coeff 1 mse: " << detail_coeff1_mse << std::endl;
 
-        //fpint hi_data;
-		//hi_data.ival = hi_packet.data;	
-        //data_type hi_val = hi_data.fval;
+        std::cout << "dwt detail coeffs 2" << std::endl;
+        float detail_coeff2_mse = 0.0;
+        for (int j = 0; j < dwt_data_size2; j++)
+        {
+            packet hi_packet;
+            coeff_hi2.read(hi_packet);
 
-        float hi_val = hi_packet.data;
+            //fpint hi_data;
+            //hi_data.ival = hi_packet.data;	
+            //data_type hi_val = hi_data.fval;
 
-        std::cout << "gt " << detail_coeff2_gt[j] << " est " << hi_val << std::endl;
+            float hi_val = hi_packet.data;
 
-		detail_coeff2_mse += std::pow(detail_coeff2_gt[j] - hi_val, 2.0);
-		// std::cout << hi_data.fval << std::endl;
-	}
+            std::cout << "gt " << detail_coeff2_gt[j] << " est " << hi_val << std::endl;
 
-	detail_coeff2_mse /= dwt_data_size2;
-	std::cout << "detail coeff 2 mse: " << detail_coeff2_mse << std::endl;	
+            detail_coeff2_mse += std::pow(detail_coeff2_gt[j] - hi_val, 2.0);
+            // std::cout << hi_data.fval << std::endl;
+        }
 
-	std::cout << "dwt detail coeffs 3" << std::endl;
-	float detail_coeff3_mse = 0.0;
-	for (int j = 0; j < dwt_data_size3; j++)
-	{
-		packet hi_packet;
-		coeff_hi3.read(hi_packet);
+        detail_coeff2_mse /= dwt_data_size2;
+        std::cout << "detail coeff 2 mse: " << detail_coeff2_mse << std::endl;	
 
-        //fpint hi_data;
-		//hi_data.ival = hi_packet.data;	
-        //data_type hi_val = hi_data.fval;
+        std::cout << "dwt detail coeffs 3" << std::endl;
+        float detail_coeff3_mse = 0.0;
+        for (int j = 0; j < dwt_data_size3; j++)
+        {
+            packet hi_packet;
+            coeff_hi3.read(hi_packet);
 
-        float hi_val = hi_packet.data;
+            //fpint hi_data;
+            //hi_data.ival = hi_packet.data;	
+            //data_type hi_val = hi_data.fval;
 
-        std::cout << "gt " << detail_coeff3_gt[j] << " est " << hi_val << std::endl;
+            float hi_val = hi_packet.data;
 
-		detail_coeff2_mse += std::pow(detail_coeff3_gt[j] - hi_val, 2.0);
-		// std::cout << hi_data.fval << std::endl;
-	}
+            std::cout << "gt " << detail_coeff3_gt[j] << " est " << hi_val << std::endl;
 
-	detail_coeff3_mse /= dwt_data_size3;
-	std::cout << "detail coeff 3 mse: " << detail_coeff3_mse << std::endl;	
+            detail_coeff2_mse += std::pow(detail_coeff3_gt[j] - hi_val, 2.0);
+            // std::cout << hi_data.fval << std::endl;
+        }
 
-
-	std::cout << "dwt detail coeffs 4" << std::endl;
-	float detail_coeff4_mse = 0.0;
-	for (int j = 0; j < dwt_data_size4; j++)
-	{
-		packet hi_packet;
-		coeff_hi4.read(hi_packet);
-
-        //fpint hi_data;
-		//hi_data.ival = hi_packet.data;	
-        //data_type hi_val = hi_data.fval;
-
-        float hi_val = hi_packet.data;
-
-        std::cout << "gt " << detail_coeff4_gt[j] << " est " << hi_val << std::endl;
-
-		detail_coeff4_mse += std::pow(detail_coeff4_gt[j] - hi_val, 2.0);
-		// std::cout << hi_data.fval << std::endl;
-	}
-
-	detail_coeff4_mse /= dwt_data_size4;
-	std::cout << "detail coeff 4 mse: " << detail_coeff4_mse << std::endl;	
+        detail_coeff3_mse /= dwt_data_size3;
+        std::cout << "detail coeff 3 mse: " << detail_coeff3_mse << std::endl;	
 
 
-	std::cout << "dwt detail coeffs 5" << std::endl;
-	float detail_coeff5_mse = 0.0;
-	for (int j = 0; j < dwt_data_size5; j++)
-	{
-		packet hi_packet;
-		coeff_hi5.read(hi_packet);
+        std::cout << "dwt detail coeffs 4" << std::endl;
+        float detail_coeff4_mse = 0.0;
+        for (int j = 0; j < dwt_data_size4; j++)
+        {
+            packet hi_packet;
+            coeff_hi4.read(hi_packet);
 
-        //fpint hi_data;
-		//hi_data.ival = hi_packet.data;	
-        //data_type hi_val = hi_data.fval;
+            //fpint hi_data;
+            //hi_data.ival = hi_packet.data;	
+            //data_type hi_val = hi_data.fval;
 
-        float hi_val = hi_packet.data;
+            float hi_val = hi_packet.data;
 
-        std::cout << "gt " << detail_coeff5_gt[j] << " est " << hi_val << std::endl;
+            std::cout << "gt " << detail_coeff4_gt[j] << " est " << hi_val << std::endl;
 
-		detail_coeff5_mse += std::pow(detail_coeff5_gt[j] - hi_val, 2.0);
-		// std::cout << hi_data.fval << std::endl;
-	}
+            detail_coeff4_mse += std::pow(detail_coeff4_gt[j] - hi_val, 2.0);
+            // std::cout << hi_data.fval << std::endl;
+        }
 
-	detail_coeff5_mse /= dwt_data_size5;
-	std::cout << "detail coeff 5 mse: " << detail_coeff5_mse << std::endl;	
-    */
+        detail_coeff4_mse /= dwt_data_size4;
+        std::cout << "detail coeff 4 mse: " << detail_coeff4_mse << std::endl;	
+
+
+        std::cout << "dwt detail coeffs 5" << std::endl;
+        float detail_coeff5_mse = 0.0;
+        for (int j = 0; j < dwt_data_size5; j++)
+        {
+            packet hi_packet;
+            coeff_hi5.read(hi_packet);
+
+            //fpint hi_data;
+            //hi_data.ival = hi_packet.data;	
+            //data_type hi_val = hi_data.fval;
+
+            float hi_val = hi_packet.data;
+
+            std::cout << "gt " << detail_coeff5_gt[j] << " est " << hi_val << std::endl;
+
+            detail_coeff5_mse += std::pow(detail_coeff5_gt[j] - hi_val, 2.0);
+            // std::cout << hi_data.fval << std::endl;
+        }
+
+        detail_coeff5_mse /= dwt_data_size5;
+        std::cout << "detail coeff 5 mse: " << detail_coeff5_mse << std::endl;	
+    }
     
 	return 0;
 }

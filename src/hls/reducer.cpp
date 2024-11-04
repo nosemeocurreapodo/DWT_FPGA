@@ -112,7 +112,7 @@ ssms_loop:
         //float new_square_float = float(new_square);
         data_type new_log = 0.0;
         if(new_square > 0.0)
-            new_log = data_type(hls::log(float(new_square)));
+            new_log = data_type(hls::log(hls::abs(float(new_square))));
         //float new_log_float = float(new_log);
 		data_type new_entropy = new_square * new_log;
         //float new_entropy_float = float(new_entropy);
@@ -193,7 +193,7 @@ ssms_loop:
 #pragma HLS LOOP_TRIPCOUNT max=512 avg=512 min=512
         data_type data = buffer[i];
         data_type diff = data - _mean;
-        std_p[i % BUFFER_LEN] +=  diff*diff;        
+        std_p[i % BUFFER_LEN] +=  data_type(hls::abs(float(diff*diff)));        
     }
 
     std_reduce_1_loop:
@@ -225,7 +225,7 @@ ssms_loop:
     _std /= size;
 
     mean = float(_mean);
-    std = float(hls::sqrt(float(_std)));
+    std = float(hls::sqrt(hls::abs(float(_std))));
     square_sum = float(_square_sum);
     entropy = float(_entropy);
 
